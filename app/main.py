@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from sqlalchemy import select, func
 from app.routers import health, produtos, usuarios, clientes, vendas, auth, categorias, ws
 from app.routers import metricas, relatorios, empresa_config, admin, dividas
+from app.routers import abastecimentos
 from app.db.session import engine, AsyncSessionLocal
 from app.db.base import DeclarativeBase
 from app.db.models import User
@@ -79,6 +80,7 @@ app.include_router(relatorios.router)
 app.include_router(empresa_config.router)
 app.include_router(admin.router)
 app.include_router(dividas.router)
+app.include_router(abastecimentos.router)
 
 @app.get("/")
 async def read_root():

@@ -157,3 +157,18 @@ class PagamentoDivida(DeclarativeBase):
 
 # Adicionar relacionamentos reversos
 Cliente.vendas = relationship("Venda", back_populates="cliente")
+
+
+class Abastecimento(DeclarativeBase):
+    """Registro de abastecimentos de estoque."""
+    __tablename__ = "abastecimentos"
+
+    produto_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("produtos.id"), nullable=False, index=True)
+    usuario_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("usuarios.id"), nullable=True, index=True)
+    quantidade: Mapped[float] = mapped_column(Float, nullable=False)
+    custo_unitario: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    total_custo: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    observacao: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    produto: Mapped["Produto"] = relationship("Produto")
+    usuario: Mapped[Optional["User"]] = relationship("User")
