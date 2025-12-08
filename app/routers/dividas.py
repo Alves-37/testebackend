@@ -419,8 +419,28 @@ async def registrar_pagamento_divida(divida_id: str, payload: PagamentoDividaIn,
         else:
             divida.status = "Parcial"
 
+        # Persistir pagamento e atualização da dívida primeiro
         await db.commit()
         await db.refresh(divida)
+        await db.refresh(pagamento)
+
+        # Criar uma Venda correspondente ao pagamento da dívida (contabilizar em relatórios)
+        try:
+            venda = Venda(
+                usuario_id=usuario_uuid,
+                cliente_id=divida.cliente_id,
+                total=float(payload.valor),
+                desconto=0.0,
+                forma_pagamento=payload.forma_pagamento,
+                observacoes=f"Pagamento de dívida #{divida.id_local if getattr(divida, 'id_local', None) is not None else divida_id}",
+                cancelada=False,
+            )
+            db.add(venda)
+            # Não criaremos itens_venda sintéticos obrigatoriamente; relatórios devem somar Venda.total
+            await db.commit()
+        except Exception:
+            # Não falhar o endpoint se a criação da venda falhar; apenas prosseguir
+            await db.rollback()
 
         # Injetar nome do cliente, se disponível
         try:
