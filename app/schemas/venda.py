@@ -15,6 +15,9 @@ class ItemVendaBase(BaseModel):
     # Permitir zero para compatibilidade com dados antigos
     preco_unitario: float = Field(..., ge=0)
     subtotal: float = Field(..., ge=0)
+    taxa_iva: Optional[float] = Field(0.0, ge=0)
+    base_iva: Optional[float] = Field(0.0, ge=0)
+    valor_iva: Optional[float] = Field(0.0, ge=0)
 
     model_config = _MODEL_CONFIG_IGNORE_EXTRA
 
@@ -34,7 +37,7 @@ class ItemVendaResponse(ItemVendaBase):
             return str(v)
         return v
 
-    @field_validator('preco_unitario', 'subtotal', 'peso_kg', 'quantidade', mode='before')
+    @field_validator('preco_unitario', 'subtotal', 'peso_kg', 'quantidade', 'taxa_iva', 'base_iva', 'valor_iva', mode='before')
     @classmethod
     def default_zeros(cls, v):
         # Normaliza None para 0 para evitar erros de validação vindos do banco
@@ -55,6 +58,7 @@ class VendaBase(BaseModel):
     # Observação: alguns fluxos de cancelamento/devolução podem enviar total=0.
     total: float = Field(..., ge=0)
     desconto: Optional[float] = Field(0.0, ge=0)
+    aplicar_iva: Optional[bool] = True
     forma_pagamento: str = Field(..., min_length=1, max_length=50)
     observacoes: Optional[str] = None
 

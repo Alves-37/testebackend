@@ -95,6 +95,8 @@ async def criar_venda(venda: VendaCreate, db: AsyncSession = Depends(get_db_sess
             except ValueError:
                 usuario_uuid = None
 
+        aplicar_iva = bool(getattr(venda, 'aplicar_iva', True))
+
         nova_venda = Venda(
             id=venda_uuid,
             usuario_id=usuario_uuid,
@@ -133,7 +135,13 @@ async def criar_venda(venda: VendaCreate, db: AsyncSession = Depends(get_db_sess
                 subtotal = float(item_data.subtotal)
 
                 taxa_iva = float(getattr(produto_db, 'taxa_iva', 0.0) or 0.0)
-                if taxa_iva > 0:
+
+                # Se o cliente decidiu "Sem IVA", não registrar IVA nesta venda.
+                if not aplicar_iva:
+                    taxa_iva = 0.0
+                    base_iva = subtotal
+                    valor_iva = 0.0
+                elif taxa_iva > 0:
                     fator = 1 + (taxa_iva / 100.0)
                     base_iva = subtotal / fator
                     valor_iva = subtotal - base_iva
