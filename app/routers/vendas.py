@@ -151,6 +151,18 @@ async def criar_venda(venda: VendaCreate, db: AsyncSession = Depends(get_db_sess
                 preco_unitario = float(item_data.preco_unitario)
                 subtotal = float(item_data.subtotal)
 
+                # Custo unitário congelado no momento da venda.
+                # Preferir valor enviado pelo cliente (PDV3). Se vier 0/None, usar custo atual do produto.
+                try:
+                    custo_unit = float(getattr(item_data, 'preco_custo_unitario', 0.0) or 0.0)
+                except Exception:
+                    custo_unit = 0.0
+                if custo_unit <= 1e-9:
+                    try:
+                        custo_unit = float(getattr(produto_db, 'preco_custo', 0.0) or 0.0)
+                    except Exception:
+                        custo_unit = 0.0
+
                 taxa_iva = float(getattr(produto_db, 'taxa_iva', 0.0) or 0.0)
 
                 # Se o cliente decidiu "Sem IVA", não registrar IVA nesta venda.
@@ -173,6 +185,7 @@ async def criar_venda(venda: VendaCreate, db: AsyncSession = Depends(get_db_sess
                     peso_kg=peso_kg,
                     preco_unitario=preco_unitario,
                     subtotal=subtotal,
+                    preco_custo_unitario=custo_unit,
                     taxa_iva=taxa_iva,
                     base_iva=base_iva,
                     valor_iva=valor_iva,

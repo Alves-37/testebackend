@@ -318,7 +318,12 @@ async def relatorio_financeiro(
             pid = str(it.produto_id)
             preco_unit = float(it.preco_unitario or 0)
             qtd = float(it.peso_kg or 0) if getattr(it, "peso_kg", 0) else float(it.quantidade or 0)
-            custo_unit = float(custo_por_produto.get(pid, 0))
+            try:
+                custo_unit_item = float(getattr(it, 'preco_custo_unitario', 0) or 0)
+            except Exception:
+                custo_unit_item = 0.0
+            custo_unit_prod = float(custo_por_produto.get(pid, 0))
+            custo_unit = custo_unit_item if custo_unit_item > 1e-9 else custo_unit_prod
             faturamento += preco_unit * qtd
             custo_total += custo_unit * qtd
             itens_total += qtd

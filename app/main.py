@@ -35,6 +35,14 @@ async def lifespan(app: FastAPI):
             except Exception as mig_prod_e:
                 print(f"Aviso: migração leve de 'produtos.codigo' falhou: {mig_prod_e}")
 
+            # Migração leve: armazenar custo por item de venda (evita lucro = faturamento quando custo do produto for 0)
+            try:
+                await conn.execute(text(
+                    "ALTER TABLE itens_venda ADD COLUMN IF NOT EXISTS preco_custo_unitario DOUBLE PRECISION DEFAULT 0"
+                ))
+            except Exception as mig_itens_e:
+                print(f"Aviso: migração leve de 'itens_venda.preco_custo_unitario' falhou: {mig_itens_e}")
+
             # Migração leve para a tabela 'abastecimentos'
             try:
                 await conn.execute(text("""

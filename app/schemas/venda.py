@@ -15,6 +15,8 @@ class ItemVendaBase(BaseModel):
     # Permitir zero para compatibilidade com dados antigos
     preco_unitario: float = Field(..., ge=0)
     subtotal: float = Field(..., ge=0)
+    # Custo unitário congelado no momento da venda (pode vir do PDV3)
+    preco_custo_unitario: Optional[float] = Field(0.0, ge=0)
     taxa_iva: Optional[float] = Field(0.0, ge=0)
     base_iva: Optional[float] = Field(0.0, ge=0)
     valor_iva: Optional[float] = Field(0.0, ge=0)
@@ -37,7 +39,7 @@ class ItemVendaResponse(ItemVendaBase):
             return str(v)
         return v
 
-    @field_validator('preco_unitario', 'subtotal', 'peso_kg', 'quantidade', 'taxa_iva', 'base_iva', 'valor_iva', mode='before')
+    @field_validator('preco_unitario', 'subtotal', 'preco_custo_unitario', 'peso_kg', 'quantidade', 'taxa_iva', 'base_iva', 'valor_iva', mode='before')
     @classmethod
     def default_zeros(cls, v):
         # Normaliza None para 0 para evitar erros de validação vindos do banco

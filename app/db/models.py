@@ -79,6 +79,8 @@ class ItemVenda(DeclarativeBase):
     peso_kg: Mapped[float] = mapped_column(Float, default=0.0)
     preco_unitario: Mapped[float] = mapped_column(Float, nullable=False)
     subtotal: Mapped[float] = mapped_column(Float, nullable=False)
+    # Custo unitário congelado no momento da venda (evita lucro errado quando preco_custo do produto muda ou está 0)
+    preco_custo_unitario: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     # Campos de IVA calculados no momento da venda
     taxa_iva: Mapped[float] = mapped_column(Float, default=0.0)
     base_iva: Mapped[float] = mapped_column(Float, default=0.0)
