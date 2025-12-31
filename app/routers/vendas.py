@@ -183,11 +183,22 @@ async def criar_venda(venda: VendaCreate, db: AsyncSession = Depends(get_db_sess
                 try:
                     nome_prod = str(getattr(produto_db, 'nome', '') or '').strip().lower()
                     codigo_prod = str(getattr(produto_db, 'codigo', '') or '').strip().lower()
+                    try:
+                        categoria_id_prod = getattr(produto_db, 'categoria_id', None)
+                        categoria_id_prod = int(categoria_id_prod) if categoria_id_prod is not None else None
+                    except Exception:
+                        categoria_id_prod = None
+
                     is_servico = False
                     if codigo_prod.startswith('srv') or codigo_prod.startswith('serv'):
                         is_servico = True
                     if ('servi' in nome_prod) or ('impress' in nome_prod):
                         # cobre "serviço/servico" e "impressão/impressao"
+                        is_servico = True
+
+                    # Categorias alinhadas com PDV3 (ver /api/categorias):
+                    # 10=Impressão e Cópias, 14=Gráfica, 15=Serviços
+                    if categoria_id_prod in (10, 14, 15):
                         is_servico = True
 
                     if is_servico:
